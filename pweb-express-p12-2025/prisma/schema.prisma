@@ -1,0 +1,90 @@
+// File: prisma/schema.prisma
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ==========================================
+// MODELS BASED ON THE SCHEMA IMAGE
+// ==========================================
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String
+  email     String   @unique // Added field
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relation to Orders
+  orders Order[]
+
+  @@map("users") // Map model name to table name 'users'
+}
+
+model Genre {
+  id        String    @id @default(uuid()) // Changed to String (UUID)
+  name      String    @unique
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at") // Added for soft delete
+
+  // Relation to Books
+  books Book[]
+
+  @@map("genres") // Map model name to table name 'genres'
+}
+
+model Book {
+  id               String    @id @default(uuid())
+  title            String    @unique
+  writer           String    // Renamed from 'author'
+  publisher        String    // Added field
+  publicationYear  Int?      @map("publication_year") // Added field
+  description      String?   // Added field
+  price            Float     // Changed from Int
+  stockQuantity    Int       @map("stock_quantity") // Renamed from 'stock'
+  genreId          String    @map("genre_id") // Changed to String
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  deletedAt        DateTime? @map("deleted_at") // Added for soft delete
+
+  // Relations
+  genre         Genre          @relation(fields: [genreId], references: [id])
+  orderItems    OrderItem[]
+
+  @@map("books") // Map model name to table name 'books'
+}
+
+model Order {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at") // Added field
+
+  // Relations
+  user      User         @relation(fields: [userId], references: [id])
+  items     OrderItem[]
+
+  @@map("orders") // Map model name to table name 'orders'
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  quantity  Int
+  orderId   String   @map("order_id")
+  bookId    String   @map("book_id")
+  createdAt DateTime @default(now()) @map("created_at") // Added field
+  updatedAt DateTime @updatedAt @map("updated_at") // Added field
+
+  // Relations
+  order     Order    @relation(fields: [orderId], references: [id])
+  book      Book     @relation(fields: [bookId], references: [id])
+
+  @@map("order_items") // Map model name to table name 'order_items'
+}
