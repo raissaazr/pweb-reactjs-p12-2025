@@ -1,14 +1,17 @@
 // src/pages/Login.tsx
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom'; // Import Link
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api'; 
+import { useAuth } from '../contexts/AuthContext'; // <-- 1. IMPORT useAuth
 
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
   const navigate = useNavigate();
+  const { login } = useAuth(); // <-- 2. AMBIL FUNGSI login DARI CONTEXT
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault(); 
@@ -22,14 +25,12 @@ const Login = () => {
     }
 
     try {
-      // Panggil API backend /auth/login
       const response = await api.post('/auth/login', {
         username: username,
         password: password,
       });
 
-      // Sesuaikan 'response.data.token' dengan struktur backend Anda
-      // (Berdasarkan kode auth.routes.ts, seharusnya response.data.token)
+      // (Struktur ini sesuai dengan backend Anda)
       const token = response.data.token; 
 
       if (!token) {
@@ -38,10 +39,15 @@ const Login = () => {
         return;
       }
 
-      // Simpan token ke local storage
-      localStorage.setItem('authToken', token);
-
-      // Arahkan user ke halaman daftar buku
+      // === PERUBAHAN UTAMA ===
+      // 3. Panggil fungsi login() dari context.
+      // Fungsi ini akan:
+      //    a. Menyimpan token ke localStorage
+      //    b. Memanggil /auth/me untuk dapat data user
+      //    c. Mengubah state global 'isAuthenticated' menjadi true
+      await login(token); 
+      
+      // 4. Arahkan user ke halaman daftar buku
       navigate('/books'); 
 
     } catch (err: any) {
@@ -56,18 +62,15 @@ const Login = () => {
     }
   };
 
-  // --- STYLING (Inline CSS) ---
-  // Style untuk wrapper agar full-screen dan center
+  // --- STYLING (Tetap sama) ---
   const pageStyle: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: '100vh',
-    backgroundColor: '#1e1e1e', // Latar belakang gelap
-    color: '#e0e0e0', // Teks terang
+    backgroundColor: '#1e1e1e',
+    color: '#e0e0e0',
   };
-
-  // Style untuk kotak login
   const boxStyle: React.CSSProperties = {
     maxWidth: '400px',
     width: '100%',
@@ -75,11 +78,9 @@ const Login = () => {
     padding: '30px',
     border: '1px solid #444',
     borderRadius: '8px',
-    backgroundColor: '#2a2a2a', // Latar belakang kotak
+    backgroundColor: '#2a2a2a',
     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.5)',
   };
-
-  // Style untuk input
   const inputStyle: React.CSSProperties = {
     width: '100%',
     padding: '12px',
@@ -87,16 +88,14 @@ const Login = () => {
     border: '1px solid #555',
     backgroundColor: '#333',
     color: 'white',
-    boxSizing: 'border-box', // Penting agar padding tidak merusak layout
+    boxSizing: 'border-box',
     fontSize: '16px'
   };
-
-  // Style untuk tombol
   const buttonStyle: React.CSSProperties = {
     width: '100%',
     padding: '12px',
     cursor: 'pointer',
-    backgroundColor: loading ? '#555' : '#007bff', // Warna biru primer
+    backgroundColor: loading ? '#555' : '#007bff',
     color: 'white',
     border: 'none',
     borderRadius: '4px',
@@ -104,7 +103,6 @@ const Login = () => {
     fontSize: '16px',
     transition: 'background-color 0.2s',
   };
-  
   // --- END STYLING ---
 
   return (
@@ -112,6 +110,7 @@ const Login = () => {
       <div style={boxStyle}>
         <h2 style={{ textAlign: 'center', marginBottom: '25px' }}>Login</h2>
         <form onSubmit={handleLogin}>
+          {/* ... (Kode JSX form tetap sama) ... */}
           <div style={{ marginBottom: '20px' }}>
             <label htmlFor="username" style={{ display: 'block', marginBottom: '8px' }}>Username:</label>
             <input
