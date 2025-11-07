@@ -34,14 +34,15 @@ const Register = () => {
     try {
       // Panggil API backend /auth/register
       // (Pastikan backend Anda menggunakan field `email` sesuai skema)
-      const response = await api.post('/auth/register', {
+      const res = await api.post('/auth/register', {
         username: username,
         email: email,
         password: password,
       });
 
-      // Tampilkan pesan sukses
-      setSuccess('Registrasi berhasil! Anda akan diarahkan ke halaman login.');
+      // Gunakan pesan dari backend jika ada, kalau tidak gunakan pesan default
+      const message = res?.data?.message || 'Registrasi berhasil! Anda akan diarahkan ke halaman login.';
+      setSuccess(message);
 
       // Tunggu 2 detik lalu arahkan ke halaman login
       setTimeout(() => {

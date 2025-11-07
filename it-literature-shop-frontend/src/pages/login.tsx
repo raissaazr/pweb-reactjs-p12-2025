@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom'; // Import Link
 import api from '../services/api'; 
+import { useAuth } from '../contexts/authcontext';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -9,6 +10,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault(); 
@@ -38,11 +40,11 @@ const Login = () => {
         return;
       }
 
-      // Simpan token ke local storage
-      localStorage.setItem('authToken', token);
+  // Gunakan context.login agar AuthContext tahu user sudah login
+  await login(token);
 
-      // Arahkan user ke halaman daftar buku
-      navigate('/books'); 
+  // Arahkan user ke halaman daftar buku
+  navigate('/books');
 
     } catch (err: any) {
       if (err.response && err.response.data && err.response.data.message) {
