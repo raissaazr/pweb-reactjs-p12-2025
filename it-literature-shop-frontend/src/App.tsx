@@ -9,6 +9,7 @@ import TransactionsList from './pages/transactionslist';
 import TransactionDetail from './pages/transactiondetail';
 import Navbar from './components/navbar'; // <-- IMPORT NAVBAR
 import ProtectedRoute from './components/protectedroute'; // <-- IMPORT PROTECTED ROUTE
+import Checkout from './pages/checkout';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
           <Route path="/books/:id" element={<BookDetail />} />
           <Route path="/transactions" element={<TransactionsList />} />
           <Route path="/transactions/:id" element={<TransactionDetail />} />
+          <Route path="/checkout" element={<Checkout />} /> {/* <-- 2. TAMBAHKAN RUTE INI */}
         </Route>
 
         {/* Rute 404 (Opsional) */}
